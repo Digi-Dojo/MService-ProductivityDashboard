@@ -3,7 +3,7 @@ package it.unibz.digidojolab.dashboard.dashboard.domain;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 public class ProductivityInfo {
@@ -12,42 +12,44 @@ public class ProductivityInfo {
     private Long id;
 
     @Column
-    private Long startup_id;
+    private Long startupId;
 
     @Column
-    private Long TeamMember_id;
+    private Long teamMemberId;
 
     @Column
-    private String activity_type;
+    private String activityType;
 
     @Column
     @CreationTimestamp
-    private Date timestamp;
+    private LocalDateTime timestamp;
+
+    public ProductivityInfo() {}
 
     // All fields are required so only one constructor here
     public ProductivityInfo(Long startup_id, Long teamMember_ID, String activity_type) {
-        this.startup_id = startup_id;
-        TeamMember_id = teamMember_ID;
-        this.activity_type = activity_type;
+        this.startupId = startup_id;
+        teamMemberId = teamMember_ID;
+        this.activityType = activity_type;
     }
 
     public Long getId() {
         return id;
     }
 
-    public Long getStartup_id() {
-        return startup_id;
+    public Long getStartupId() {
+        return startupId;
     }
 
-    public Long getTeamMember_id() {
-        return TeamMember_id;
+    public Long getTeamMemberId() {
+        return teamMemberId;
     }
 
-    public String getActivity_type() {
-        return activity_type;
+    public String getActivityType() {
+        return activityType;
     }
 
-    public Date getTimestamp() {
+    public LocalDateTime getTimestamp() {
         return timestamp;
     }
 
@@ -55,19 +57,19 @@ public class ProductivityInfo {
         this.id = id;
     }
 
-    public void setStartup_id(Long startup_id) {
-        this.startup_id = startup_id;
+    public void setStartupId(Long startupId) {
+        this.startupId = startupId;
     }
 
-    public void setTeamMember_id(Long teamMember_id) {
-        TeamMember_id = teamMember_id;
+    public void setTeamMemberId(Long teamMemberId) {
+        this.teamMemberId = teamMemberId;
     }
 
-    public void setActivity_type(String activity_type) {
-        this.activity_type = activity_type;
+    public void setActivityType(String activityType) {
+        this.activityType = activityType;
     }
 
-    public void setTimestamp(Date timestamp) {
+    public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
     }
 }
