@@ -105,6 +105,26 @@ public class DashboardIntegrationTest {
     }
 
     @Test
+    public void singleTeamMemberWeeklyComputationIgnoresDataOutsideCurrentWeek() {
+        ProductivityInfo testLogin = mpi.insertPI(1L, 2L, "login");
+        ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
+        testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(15));
+        piRepo.save(testLogout);
+        ProductivityInfo testLogin2 = mpi.insertPI(1L, 2L, "login");
+        ProductivityInfo testLogout2 = mpi.insertPI(1L, 2L, "logout");
+        testLogin2.setTimestamp(testLogin2.getTimestamp().plusDays(10));
+        piRepo.save(testLogin2);
+        testLogout2.setTimestamp(testLogin2.getTimestamp().plusHours(1).plusMinutes(15));
+        piRepo.save(testLogout2);
+        HashMap output = restTemplate.getForEntity(
+                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                HashMap.class
+        ).getBody();
+        assertThat(output).isNotNull();
+        assertThat(output.get("2")).isEqualTo(75);
+    }
+
+    @Test
     public void multipleTeamMembersWeeklyComputationIsCorrect() {
         ProductivityInfo testLogin = mpi.insertPI(1L, 2L, "login");
         ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
@@ -145,6 +165,70 @@ public class DashboardIntegrationTest {
         ).getBody();
         assertThat(output2).isNotNull();
         assertThat(output2.get("2")).isEqualTo(165);
+    }
+
+    @Test
+    public void singleTeamMemberMonthlyAggregatedComputationIsCorrect() {
+        ProductivityInfo testLogin = mpi.insertPI(1L, 2L, "login");
+        ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
+        testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(15));
+        piRepo.save(testLogout);
+        Long output = restTemplate.getForEntity(
+                baseUrl + "/stats/month/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMM")) + "/aggregated",
+                Long.class
+        ).getBody();
+        assertThat(output).isNotNull();
+        assertThat(output).isEqualTo(75);
+    }
+
+    @Test
+    public void multipleTeamMembersMonthlyAggregatedComputationIsCorrect() {
+        ProductivityInfo testLogin = mpi.insertPI(1L, 2L, "login");
+        ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
+        testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(5));
+        piRepo.save(testLogout);
+        ProductivityInfo testLogin2 = mpi.insertPI(1L, 4L, "login");
+        ProductivityInfo testLogout2 = mpi.insertPI(1L, 4L, "logout");
+        testLogout2.setTimestamp(testLogin2.getTimestamp().plusHours(2).plusMinutes(45));
+        piRepo.save(testLogout2);
+        Long output = restTemplate.getForEntity(
+                baseUrl + "/stats/month/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMM")) + "/aggregated",
+                Long.class
+        ).getBody();
+        assertThat(output).isNotNull();
+        assertThat(output).isEqualTo(230);
+    }
+
+    @Test
+    public void singleTeamMemberWeeklyAggregatedComputationIsCorrect() {
+        ProductivityInfo testLogin = mpi.insertPI(1L, 2L, "login");
+        ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
+        testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(15));
+        piRepo.save(testLogout);
+        Long output = restTemplate.getForEntity(
+                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "/aggregated",
+                Long.class
+        ).getBody();
+        assertThat(output).isNotNull();
+        assertThat(output).isEqualTo(75);
+    }
+
+    @Test
+    public void multipleTeamMembersWeeklyAggregatedComputationIsCorrect() {
+        ProductivityInfo testLogin = mpi.insertPI(1L, 2L, "login");
+        ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
+        testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(5));
+        piRepo.save(testLogout);
+        ProductivityInfo testLogin2 = mpi.insertPI(1L, 4L, "login");
+        ProductivityInfo testLogout2 = mpi.insertPI(1L, 4L, "logout");
+        testLogout2.setTimestamp(testLogin2.getTimestamp().plusHours(2).plusMinutes(45));
+        piRepo.save(testLogout2);
+        Long output = restTemplate.getForEntity(
+                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "/aggregated",
+                Long.class
+        ).getBody();
+        assertThat(output).isNotNull();
+        assertThat(output).isEqualTo(230);
     }
 
 }
