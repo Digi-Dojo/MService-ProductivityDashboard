@@ -7,6 +7,10 @@ import java.util.List;
 
 public interface ProductivityInfoRepository extends JpaRepository<ProductivityInfo, Long> {
     List<ProductivityInfo> findByStartupIdAndActivityTypeAndTimestampBetween(
-            Long startup_id, String activity_type, LocalDateTime timestamp, LocalDateTime after
+            Long startupId, String activityType, LocalDateTime timestamp, LocalDateTime after
+    );
+
+    List<ProductivityInfo> findByStartupIdAndTeamMemberIdAndActivityTypeAndTimestampBetween(
+            Long startupId, Long teamMemberId, String activityType, LocalDateTime timestamp, LocalDateTime after
     );
 }
