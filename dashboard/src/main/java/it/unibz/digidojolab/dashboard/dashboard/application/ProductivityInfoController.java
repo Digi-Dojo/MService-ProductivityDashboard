@@ -5,6 +5,7 @@ import it.unibz.digidojolab.dashboard.dashboard.domain.ProductivityInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -28,18 +29,14 @@ public class ProductivityInfoController {
         YearMonth ym = YearMonth.parse(yearMonth, formatter);
         LocalDateTime firstDayOfMonth = ym.atDay(1).atStartOfDay();
         LocalDateTime lastDayOfMonth = firstDayOfMonth.plusMonths(1);
-        System.out.println(firstDayOfMonth.toString());
-        System.out.println(lastDayOfMonth.toString());
         return mpi.computeWorkedTimeInPeriod(Long.parseLong(startupId), firstDayOfMonth, lastDayOfMonth);
     }
 
     @GetMapping(value="/stats/week/{startup_id}/{yearmonthday}")
     public HashMap<Long, Long> weekStatsPerStartup(@PathVariable("startup_id") String startupId, @PathVariable("yearmonthday") String yearMonthDay) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDateTime firstDayOfMonth = LocalDateTime.parse(yearMonthDay, formatter);
+        LocalDateTime firstDayOfMonth = LocalDate.parse(yearMonthDay, formatter).atStartOfDay();
         LocalDateTime lastDayOfMonth = firstDayOfMonth.plusMonths(1);
-        System.out.println(firstDayOfMonth.toString());
-        System.out.println(lastDayOfMonth.toString());
         return mpi.computeWorkedTimeInPeriod(Long.parseLong(startupId), firstDayOfMonth, lastDayOfMonth);
     }
 }
