@@ -1,0 +1,107 @@
+package it.unibz.digidojolab.dashboard;
+
+import it.unibz.digidojolab.dashboard.dashboard.domain.ManageProductivityInfo;
+import it.unibz.digidojolab.dashboard.dashboard.domain.ProductivityInfo;
+import it.unibz.digidojolab.dashboard.dashboard.domain.ProductivityInfoRepository;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class DashboardIntegrationTest {
+    @LocalServerPort
+    private int port;
+
+    private String baseUrl = "http://localhost";
+
+    private static RestTemplate restTemplate;
+
+    @Autowired
+    private ProductivityInfoRepository piRepo;
+
+    @Autowired
+    private ManageProductivityInfo mpi;
+
+    private void ensureEmptyDatabase() {
+        piRepo.deleteAll();
+    }
+
+    @BeforeEach
+    public void setup() {
+        baseUrl = baseUrl + ":" + port + "/productivityinfo";
+
+        ensureEmptyDatabase();
+    }
+
+    @BeforeAll
+    public static void init() {
+        restTemplate = new RestTemplate();
+    }
+
+    public ProductivityInfo productivityInfoCreationPost(ProductivityInfo sample) {
+        return restTemplate.postForObject(baseUrl, sample, sample.getClass());
+    }
+
+    @Test
+    public void itCreatesLogin() {
+        ProductivityInfo testLogin = new ProductivityInfo(1L, 3L, "login");
+        ProductivityInfo response = productivityInfoCreationPost(testLogin);
+        assertThat(testLogin.getId()).isNull();
+        assertThat(response)
+                .isNotNull()
+                .isInstanceOf(ProductivityInfo.class);
+        assertThat(response.getId())
+                .isNotNull();
+        assertThat(response.getStartupId()).isEqualTo(testLogin.getStartupId());
+        assertThat(response.getTeamMemberId()).isEqualTo(testLogin.getTeamMemberId());
+        assertThat(response.getActivityType()).isEqualTo(testLogin.getActivityType());
+    }
+
+    @Test
+    public void itCreatesLogout() {
+        ProductivityInfo testLogout = new ProductivityInfo(2L, 5L, "logout");
+        ProductivityInfo response = productivityInfoCreationPost(testLogout);
+        assertThat(testLogout.getId()).isNull();
+        assertThat(response)
+                .isNotNull()
+                .isInstanceOf(ProductivityInfo.class);
+        assertThat(response.getId())
+                .isNotNull();
+        assertThat(response.getStartupId()).isEqualTo(testLogout.getStartupId());
+        assertThat(response.getTeamMemberId()).isEqualTo(testLogout.getTeamMemberId());
+        assertThat(response.getActivityType()).isEqualTo(testLogout.getActivityType());
+    }
+
+    @Test
+    public void itDoesNotCreateUnknownType() {
+        ProductivityInfo testWrong = new ProductivityInfo(1L, 3L, "whatever");
+        assertThatThrownBy(() -> restTemplate.postForObject(baseUrl, testWrong, testWrong.getClass()))
+                .isInstanceOf(HttpClientErrorException.class);
+    }
+
+    @Test
+    public void singleTeamMemberWeeklyComputationIsCorrect() {
+        ProductivityInfo testLogin = mpi.insertPI(1L, 2L, "login");
+        ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
+        testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(15));
+        piRepo.save(testLogout);
+        HashMap output = restTemplate.getForEntity(
+                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                HashMap.class
+        ).getBody();
+        assertThat(output).isNotNull();
+        assertThat(output.get("2")).isEqualTo(75);
+    }
+
+}
