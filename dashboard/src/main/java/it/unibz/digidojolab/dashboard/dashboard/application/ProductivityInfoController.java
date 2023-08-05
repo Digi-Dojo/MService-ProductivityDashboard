@@ -18,7 +18,7 @@ public class ProductivityInfoController {
 
     @PostMapping
     public ProductivityInfo create(@RequestBody CreateProductivityInfoDTO dto) {
-        return mpi.insertPI(dto.getStartup_id(), dto.getTeamMember_id(), dto.getActivity_type());
+        return mpi.insertPI(dto.getStartupId(), dto.getTeamMemberId(), dto.getActivityType());
     }
 
     @GetMapping(value="/stats/month/{startup_id}/{yearmonth}")
