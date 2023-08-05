@@ -22,10 +22,10 @@ public class ManageProductivityInfo {
         pi_repo = repo;
     }
 
-    public ProductivityInfo insertPI(Long startup_id, Long TeamMember_id, String activity_type) {
-        if (!activity_type.equals("login") && !activity_type.equals("logout"))
+    public ProductivityInfo insertPI(Long startupId, Long teamMemberId, String activityType) {
+        if (!activityType.equals("login") && !activityType.equals("logout"))
             throw new IllegalArgumentException("Invalid activity_type");
-        return pi_repo.save(new ProductivityInfo(startup_id, TeamMember_id, activity_type));
+        return pi_repo.save(new ProductivityInfo(startupId, teamMemberId, activityType));
     }
 
     public HashMap<Long, Long> computeWorkedTimeInPeriod(Long startupId, LocalDateTime start, LocalDateTime end) {
