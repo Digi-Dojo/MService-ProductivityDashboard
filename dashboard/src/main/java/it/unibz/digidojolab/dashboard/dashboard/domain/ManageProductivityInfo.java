@@ -28,25 +28,27 @@ public class ManageProductivityInfo {
         return pi_repo.save(new ProductivityInfo(startupId, teamMemberId, activityType));
     }
 
+    private Long computeShiftDuration(ProductivityInfo shiftStart) {
+        // ASSUMPTION: a shift can last no longer than 24 hours.
+        // By using this implementation, we can significantly reduce
+        // compute time and also allow edge cases in which the shift
+        // end the night of the first day of the following month.
+        LocalDateTime shiftEnd = shiftStart.getTimestamp().plusDays(1);
+        List<ProductivityInfo> logout = pi_repo.findByStartupIdAndTeamMemberIdAndActivityTypeAndTimestampBetween(
+                shiftStart.getStartupId(), shiftStart.getTeamMemberId(),"logout", shiftStart.getTimestamp(), shiftEnd
+        );
+        if (logout.size() < 1)
+            throw new IllegalStateException("Unable to find relevant logout for " + shiftStart);
+        return shiftStart.getTimestamp().until(logout.get(0).getTimestamp(), ChronoUnit.MINUTES);
+    }
+
     public HashMap<Long, Long> computeWorkedTimeInPeriod(Long startupId, LocalDateTime start, LocalDateTime end) {
         List<ProductivityInfo> logins = pi_repo.findByStartupIdAndActivityTypeAndTimestampBetween(
                 startupId, "login", start, end
         );
         HashMap<Long, Long> workedMinutes = new HashMap<>();
-        for (int i=0; i<logins.size(); i++) {
-            // ASSUMPTION: a shift can last no longer than 24 hours.
-            // By using this implementation, we can significantly reduce
-            // compute time and also allow edge cases in which the shift
-            // end the night of the first day of the following month.
-            ProductivityInfo pi = logins.get(i);
-            LocalDateTime shiftEnd = pi.getTimestamp().plusDays(1);
-            List<ProductivityInfo> logout = pi_repo.findByStartupIdAndTeamMemberIdAndActivityTypeAndTimestampBetween(
-                    startupId, pi.getTeamMemberId(),"logout", pi.getTimestamp(), shiftEnd
-            );
-            if (logout.size() < 1)
-                throw new IllegalStateException("Unable to find relevant logout for " + pi);
-            Long shiftDuration = pi.getTimestamp().until(logout.get(0).getTimestamp(), ChronoUnit.MINUTES);
-            System.out.println("" + pi.getStartupId() + " " + pi.getTeamMemberId() + " " + pi.getTimestamp() + " " + logout.get(0).getTimestamp() + " " + shiftDuration);
+        for (ProductivityInfo pi : logins) {
+            Long shiftDuration = computeShiftDuration(pi);
             if (workedMinutes.containsKey(pi.getTeamMemberId()))
                 workedMinutes.put(pi.getTeamMemberId(), workedMinutes.get(pi.getTeamMemberId()) + shiftDuration);
             else
@@ -55,5 +57,15 @@ public class ManageProductivityInfo {
         return workedMinutes;
     }
 
+    public Long computeAggregatedWorkedTimeInPeriod(Long startupId, LocalDateTime start, LocalDateTime end) {
+        List<ProductivityInfo> logins = pi_repo.findByStartupIdAndActivityTypeAndTimestampBetween(
+                startupId, "login", start, end
+        );
+        Long allWorkedMinutes = 0L;
+        for (ProductivityInfo login : logins) {
+            allWorkedMinutes += computeShiftDuration(login);
+        }
+        return allWorkedMinutes;
+    }
 
 }
