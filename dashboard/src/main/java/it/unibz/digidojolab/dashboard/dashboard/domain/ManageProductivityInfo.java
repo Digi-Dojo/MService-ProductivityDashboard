@@ -46,7 +46,6 @@ public class ManageProductivityInfo {
             if (logout.size() < 1)
                 throw new IllegalStateException("Unable to find relevant logout for " + pi);
             Long shiftDuration = pi.getTimestamp().until(logout.get(0).getTimestamp(), ChronoUnit.MINUTES);
-            System.out.println(pi.getTeamMemberId().toString() + " " + pi.getTimestamp().toString() + " " + logout.get(0).getTimestamp() + " " + shiftDuration);
             if (workedMinutes.containsKey(pi.getTeamMemberId()))
                 workedMinutes.put(pi.getTeamMemberId(), workedMinutes.get(pi.getTeamMemberId()) + shiftDuration);
             else
