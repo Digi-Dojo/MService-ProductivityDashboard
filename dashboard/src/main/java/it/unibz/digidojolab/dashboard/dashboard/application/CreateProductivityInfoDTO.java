@@ -1,39 +1,39 @@
 package it.unibz.digidojolab.dashboard.dashboard.application;
 
 public class CreateProductivityInfoDTO {
-    private Long startup_id;
+    private Long startupId;
 
-    private Long TeamMember_id;
+    private Long teamMemberId;
 
-    private String activity_type;
+    private String activityType;
 
-    public CreateProductivityInfoDTO(Long startup_id, Long teamMember_id, String activity_type) {
-        this.startup_id = startup_id;
-        TeamMember_id = teamMember_id;
-        this.activity_type = activity_type;
+    public CreateProductivityInfoDTO(Long startupId, Long teamMemberId, String activityType) {
+        this.startupId = startupId;
+        this.teamMemberId = teamMemberId;
+        this.activityType = activityType;
     }
 
-    public Long getStartup_id() {
-        return startup_id;
+    public Long getStartupId() {
+        return startupId;
     }
 
-    public void setStartup_id(Long startup_id) {
-        this.startup_id = startup_id;
+    public void setStartupId(Long startupId) {
+        this.startupId = startupId;
     }
 
-    public Long getTeamMember_id() {
-        return TeamMember_id;
+    public Long getTeamMemberId() {
+        return teamMemberId;
     }
 
-    public void setTeamMember_id(Long teamMember_id) {
-        TeamMember_id = teamMember_id;
+    public void setTeamMemberId(Long teamMemberId) {
+        this.teamMemberId = teamMemberId;
     }
 
-    public String getActivity_type() {
-        return activity_type;
+    public String getActivityType() {
+        return activityType;
     }
 
-    public void setActivity_type(String activity_type) {
-        this.activity_type = activity_type;
+    public void setActivityType(String activityType) {
+        this.activityType = activityType;
     }
 }
