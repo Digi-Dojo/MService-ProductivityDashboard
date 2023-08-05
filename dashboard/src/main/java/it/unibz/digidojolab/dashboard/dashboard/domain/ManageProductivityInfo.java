@@ -40,12 +40,13 @@ public class ManageProductivityInfo {
             // end the night of the first day of the following month.
             ProductivityInfo pi = logins.get(i);
             LocalDateTime shiftEnd = pi.getTimestamp().plusDays(1);
-            List<ProductivityInfo> logout = pi_repo.findByStartupIdAndActivityTypeAndTimestampBetween(
-                    startupId, "logout", pi.getTimestamp(), shiftEnd
+            List<ProductivityInfo> logout = pi_repo.findByStartupIdAndTeamMemberIdAndActivityTypeAndTimestampBetween(
+                    startupId, pi.getTeamMemberId(),"logout", pi.getTimestamp(), shiftEnd
             );
             if (logout.size() < 1)
                 throw new IllegalStateException("Unable to find relevant logout for " + pi);
             Long shiftDuration = pi.getTimestamp().until(logout.get(0).getTimestamp(), ChronoUnit.MINUTES);
+            System.out.println("" + pi.getStartupId() + " " + pi.getTeamMemberId() + " " + pi.getTimestamp() + " " + logout.get(0).getTimestamp() + " " + shiftDuration);
             if (workedMinutes.containsKey(pi.getTeamMemberId()))
                 workedMinutes.put(pi.getTeamMemberId(), workedMinutes.get(pi.getTeamMemberId()) + shiftDuration);
             else
