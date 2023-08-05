@@ -104,4 +104,47 @@ public class DashboardIntegrationTest {
         assertThat(output.get("2")).isEqualTo(75);
     }
 
+    @Test
+    public void multipleTeamMembersWeeklyComputationIsCorrect() {
+        ProductivityInfo testLogin = mpi.insertPI(1L, 2L, "login");
+        ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
+        testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(10));
+        piRepo.save(testLogout);
+        ProductivityInfo testLogin2 = mpi.insertPI(1L, 3L, "login");
+        ProductivityInfo testLogout2 = mpi.insertPI(1L, 3L, "logout");
+        testLogout2.setTimestamp(testLogin2.getTimestamp().plusHours(2).plusMinutes(30));
+        piRepo.save(testLogout2);
+        HashMap output = restTemplate.getForEntity(
+                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                HashMap.class
+        ).getBody();
+        assertThat(output).isNotNull();
+        assertThat(output.get("2")).isEqualTo(70);
+        assertThat(output.get("3")).isEqualTo(150);
+    }
+
+    @Test
+    public void multipleStartupsWeeklyComputationIsCorrect() {
+        ProductivityInfo testLogin = mpi.insertPI(1L, 2L, "login");
+        ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
+        testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(5));
+        piRepo.save(testLogout);
+        ProductivityInfo testLogin2 = mpi.insertPI(2L, 2L, "login");
+        ProductivityInfo testLogout2 = mpi.insertPI(2L, 2L, "logout");
+        testLogout2.setTimestamp(testLogin2.getTimestamp().plusHours(2).plusMinutes(45));
+        piRepo.save(testLogout2);
+        HashMap output = restTemplate.getForEntity(
+                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                HashMap.class
+        ).getBody();
+        assertThat(output).isNotNull();
+        assertThat(output.get("2")).isEqualTo(65);
+        HashMap output2 = restTemplate.getForEntity(
+                baseUrl + "/stats/week/2/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                HashMap.class
+        ).getBody();
+        assertThat(output2).isNotNull();
+        assertThat(output2.get("2")).isEqualTo(165);
+    }
+
 }
