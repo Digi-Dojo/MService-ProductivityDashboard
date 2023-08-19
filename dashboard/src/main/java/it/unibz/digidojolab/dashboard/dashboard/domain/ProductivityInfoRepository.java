@@ -13,4 +13,8 @@ public interface ProductivityInfoRepository extends JpaRepository<ProductivityIn
     List<ProductivityInfo> findByStartupIdAndTeamMemberIdAndActivityTypeAndTimestampBetween(
             Long startupId, Long teamMemberId, String activityType, LocalDateTime timestamp, LocalDateTime after
     );
+
+    List<ProductivityInfo> findByTeamMemberIdAndActivityTypeAndTimestampBetween(
+            Long teamMemberId, String activityType, LocalDateTime timestamp, LocalDateTime after
+    );
 }
