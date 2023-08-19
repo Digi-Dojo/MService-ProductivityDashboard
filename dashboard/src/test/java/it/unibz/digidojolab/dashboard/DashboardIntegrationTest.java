@@ -97,7 +97,7 @@ public class DashboardIntegrationTest {
         testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(15));
         piRepo.save(testLogout);
         HashMap output = restTemplate.getForEntity(
-                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                baseUrl + "/startups/1/worked_hours?start=" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
                 HashMap.class
         ).getBody();
         assertThat(output).isNotNull();
@@ -117,7 +117,7 @@ public class DashboardIntegrationTest {
         testLogout2.setTimestamp(testLogin2.getTimestamp().plusHours(1).plusMinutes(15));
         piRepo.save(testLogout2);
         HashMap output = restTemplate.getForEntity(
-                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                baseUrl + "/startups/1/worked_hours?start=" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
                 HashMap.class
         ).getBody();
         assertThat(output).isNotNull();
@@ -135,7 +135,7 @@ public class DashboardIntegrationTest {
         testLogout2.setTimestamp(testLogin2.getTimestamp().plusHours(2).plusMinutes(30));
         piRepo.save(testLogout2);
         HashMap output = restTemplate.getForEntity(
-                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                baseUrl + "/startups/1/worked_hours?start=" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
                 HashMap.class
         ).getBody();
         assertThat(output).isNotNull();
@@ -149,22 +149,22 @@ public class DashboardIntegrationTest {
         ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
         testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(5));
         piRepo.save(testLogout);
-        ProductivityInfo testLogin2 = mpi.insertPI(2L, 2L, "login");
-        ProductivityInfo testLogout2 = mpi.insertPI(2L, 2L, "logout");
+        ProductivityInfo testLogin2 = mpi.insertPI(2L, 6L, "login");
+        ProductivityInfo testLogout2 = mpi.insertPI(2L, 6L, "logout");
         testLogout2.setTimestamp(testLogin2.getTimestamp().plusHours(2).plusMinutes(45));
         piRepo.save(testLogout2);
         HashMap output = restTemplate.getForEntity(
-                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                baseUrl + "/startups/1/worked_hours?start=" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
                 HashMap.class
         ).getBody();
         assertThat(output).isNotNull();
         assertThat(output.get("2")).isEqualTo(65);
         HashMap output2 = restTemplate.getForEntity(
-                baseUrl + "/stats/week/2/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                baseUrl + "/startups/2/worked_hours?start=" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
                 HashMap.class
         ).getBody();
         assertThat(output2).isNotNull();
-        assertThat(output2.get("2")).isEqualTo(165);
+        assertThat(output2.get("6")).isEqualTo(165);
     }
 
     @Test
@@ -173,12 +173,12 @@ public class DashboardIntegrationTest {
         ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
         testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(15));
         piRepo.save(testLogout);
-        Long output = restTemplate.getForEntity(
-                baseUrl + "/stats/month/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMM")) + "/aggregated",
-                Long.class
+        HashMap output = restTemplate.getForEntity(
+                baseUrl + "/startups/1/worked_hours?period=month&start=" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMM")),
+                HashMap.class
         ).getBody();
         assertThat(output).isNotNull();
-        assertThat(output).isEqualTo(75);
+        assertThat(output.get("2")).isEqualTo(75);
     }
 
     @Test
@@ -191,44 +191,34 @@ public class DashboardIntegrationTest {
         ProductivityInfo testLogout2 = mpi.insertPI(1L, 4L, "logout");
         testLogout2.setTimestamp(testLogin2.getTimestamp().plusHours(2).plusMinutes(45));
         piRepo.save(testLogout2);
-        Long output = restTemplate.getForEntity(
-                baseUrl + "/stats/month/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMM")) + "/aggregated",
-                Long.class
+        HashMap output = restTemplate.getForEntity(
+                baseUrl + "/startups/1/worked_hours?period=month&start=" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMM")),
+                HashMap.class
         ).getBody();
         assertThat(output).isNotNull();
-        assertThat(output).isEqualTo(230);
+        assertThat(output.get("2")).isEqualTo(65);
+        assertThat(output.get("4")).isEqualTo(165);
     }
 
-    @Test
-    public void singleTeamMemberWeeklyAggregatedComputationIsCorrect() {
-        ProductivityInfo testLogin = mpi.insertPI(1L, 2L, "login");
-        ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
-        testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(15));
-        piRepo.save(testLogout);
-        Long output = restTemplate.getForEntity(
-                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "/aggregated",
-                Long.class
-        ).getBody();
-        assertThat(output).isNotNull();
-        assertThat(output).isEqualTo(75);
-    }
+
 
     @Test
-    public void multipleTeamMembersWeeklyAggregatedComputationIsCorrect() {
+    public void multipleStartupsSingleTeamMemberWeeklyComputationIsCorrect() {
         ProductivityInfo testLogin = mpi.insertPI(1L, 2L, "login");
         ProductivityInfo testLogout = mpi.insertPI(1L, 2L, "logout");
         testLogout.setTimestamp(testLogin.getTimestamp().plusHours(1).plusMinutes(5));
         piRepo.save(testLogout);
-        ProductivityInfo testLogin2 = mpi.insertPI(1L, 4L, "login");
-        ProductivityInfo testLogout2 = mpi.insertPI(1L, 4L, "logout");
+        ProductivityInfo testLogin2 = mpi.insertPI(2L, 2L, "login");
+        ProductivityInfo testLogout2 = mpi.insertPI(2L, 2L, "logout");
         testLogout2.setTimestamp(testLogin2.getTimestamp().plusHours(2).plusMinutes(45));
         piRepo.save(testLogout2);
-        Long output = restTemplate.getForEntity(
-                baseUrl + "/stats/week/1/" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "/aggregated",
-                Long.class
+        HashMap output = restTemplate.getForEntity(
+                baseUrl + "/members/2/worked_hours?start=" + testLogin.getTimestamp().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                HashMap.class
         ).getBody();
         assertThat(output).isNotNull();
-        assertThat(output).isEqualTo(230);
+        assertThat(output.get("1")).isEqualTo(65);
+        assertThat(output.get("2")).isEqualTo(165);
     }
 
 }
