@@ -22,39 +22,48 @@ public class ProductivityInfoController {
         return mpi.insertPI(dto.getStartupId(), dto.getTeamMemberId(), dto.getActivityType());
     }
 
-    @GetMapping(value="/stats/month/{startup_id}/{yearmonth}")
-    public HashMap<Long, Long> monthStatsPerStartup(@PathVariable("startup_id") String startupId, @PathVariable("yearmonth") String yearMonth) {
-        // find first day of the month as LocalDate object
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-        YearMonth ym = YearMonth.parse(yearMonth, formatter);
-        LocalDateTime firstDayOfMonth = ym.atDay(1).atStartOfDay();
-        LocalDateTime lastDayOfMonth = firstDayOfMonth.plusMonths(1);
-        return mpi.computeWorkedTimeInPeriod(Long.parseLong(startupId), firstDayOfMonth, lastDayOfMonth);
+    LocalDateTime getStartDate(String period, String startTimestamp) {
+        if (period.equals("month")) {
+            // find first day of the month as LocalDate object
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+            YearMonth ym = YearMonth.parse(startTimestamp, formatter);
+            return ym.atDay(1).atStartOfDay();
+        } else if (period.equals("week")) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+            return LocalDate.parse(startTimestamp, formatter).atStartOfDay();
+        } else throw new IllegalArgumentException("period should either be week or month");
     }
 
-    @GetMapping(value="/stats/month/{startup_id}/{yearmonth}/aggregated")
-    public Long aggregatedMonthStatsPerStartup(@PathVariable("startup_id") String startupId, @PathVariable("yearmonth") String yearMonth) {
-        // find first day of the month as LocalDate object
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-        YearMonth ym = YearMonth.parse(yearMonth, formatter);
-        LocalDateTime firstDayOfMonth = ym.atDay(1).atStartOfDay();
-        LocalDateTime lastDayOfMonth = firstDayOfMonth.plusMonths(1);
-        return mpi.computeAggregatedWorkedTimeInPeriod(Long.parseLong(startupId), firstDayOfMonth, lastDayOfMonth);
+    LocalDateTime getEndDate(String period, LocalDateTime startDate) {
+        if (period.equals("month")) {
+            return startDate.plusMonths(1);
+        } else if (period.equals("week")) {
+            return startDate.plusDays(7);
+        } else throw new IllegalArgumentException("period should either be week or month");
     }
 
-    @GetMapping(value="/stats/week/{startup_id}/{yearmonthday}")
-    public HashMap<Long, Long> weekStatsPerStartup(@PathVariable("startup_id") String startupId, @PathVariable("yearmonthday") String yearMonthDay) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDateTime firstDay = LocalDate.parse(yearMonthDay, formatter).atStartOfDay();
-        LocalDateTime lastDay = firstDay.plusDays(7);
-        return mpi.computeWorkedTimeInPeriod(Long.parseLong(startupId), firstDay, lastDay);
+    @GetMapping("/startups/{startup_id}/worked_hours")
+    public HashMap<Long, Long> getStartupWorkedHours(
+            @PathVariable("startup_id") Long startupId,
+            @RequestParam(value = "period", defaultValue = "week") String period,
+            @RequestParam("start") String startTimestamp) {
+
+        LocalDateTime startDate = getStartDate(period, startTimestamp);
+        LocalDateTime endDate = getEndDate(period, startDate);
+
+        return mpi.computeWorkedTimeInPeriod(startupId, startDate, endDate);
     }
 
-    @GetMapping(value="/stats/week/{startup_id}/{yearmonthday}/aggregated")
-    public Long aggregatedWeekStatsPerStartup(@PathVariable("startup_id") String startupId, @PathVariable("yearmonthday") String yearMonthDay) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDateTime firstDay = LocalDate.parse(yearMonthDay, formatter).atStartOfDay();
-        LocalDateTime lastDay = firstDay.plusDays(7);
-        return mpi.computeAggregatedWorkedTimeInPeriod(Long.parseLong(startupId), firstDay, lastDay);
+    @GetMapping("/members/{member_id}/worked_hours")
+    public HashMap<Long, Long> getMemberWorkedHours(
+            @PathVariable("member_id") Long memberId,
+            @RequestParam(value = "period", defaultValue = "week") String period,
+            @RequestParam("start") String startTimestamp) {
+
+        LocalDateTime startDate = getStartDate(period, startTimestamp);
+        LocalDateTime endDate = getEndDate(period, startDate);
+
+        return mpi.computeWorkedTimeForMemberInPeriod(memberId, startDate, endDate);
     }
+
 }
