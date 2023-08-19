@@ -57,15 +57,19 @@ public class ManageProductivityInfo {
         return workedMinutes;
     }
 
-    public Long computeAggregatedWorkedTimeInPeriod(Long startupId, LocalDateTime start, LocalDateTime end) {
-        List<ProductivityInfo> logins = pi_repo.findByStartupIdAndActivityTypeAndTimestampBetween(
-                startupId, "login", start, end
+    public HashMap<Long, Long> computeWorkedTimeForMemberInPeriod(Long teamMemberId, LocalDateTime start, LocalDateTime end) {
+        List<ProductivityInfo> logins = pi_repo.findByTeamMemberIdAndActivityTypeAndTimestampBetween(
+                teamMemberId,"login", start, end
         );
-        Long allWorkedMinutes = 0L;
-        for (ProductivityInfo login : logins) {
-            allWorkedMinutes += computeShiftDuration(login);
+        HashMap<Long, Long> workedMinutes = new HashMap<>();
+        for (ProductivityInfo pi : logins) {
+            Long shiftDuration = computeShiftDuration(pi);
+            if (workedMinutes.containsKey(pi.getStartupId()))
+                workedMinutes.put(pi.getStartupId(), workedMinutes.get(pi.getTeamMemberId()) + shiftDuration);
+            else
+                workedMinutes.put(pi.getStartupId(), shiftDuration);
         }
-        return allWorkedMinutes;
+        return workedMinutes;
     }
 
 }
