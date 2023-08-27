@@ -42,6 +42,7 @@ public class ProductivityInfoController {
         } else throw new IllegalArgumentException("period should either be week or month");
     }
 
+    @CrossOrigin(origins = "https://digidojo-productivitydashboard.onrender.com")
     @GetMapping("/startups/{startup_id}/worked_hours")
     public HashMap<Long, Long> getStartupWorkedHours(
             @PathVariable("startup_id") Long startupId,
@@ -54,6 +55,7 @@ public class ProductivityInfoController {
         return mpi.computeWorkedTimeInPeriod(startupId, startDate, endDate);
     }
 
+    @CrossOrigin(origins = "https://digidojo-productivitydashboard.onrender.com")
     @GetMapping("/members/{member_id}/worked_hours")
     public HashMap<Long, Long> getMemberWorkedHours(
             @PathVariable("member_id") Long memberId,
