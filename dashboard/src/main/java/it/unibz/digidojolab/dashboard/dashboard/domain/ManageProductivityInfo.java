@@ -37,8 +37,8 @@ public class ManageProductivityInfo {
         List<ProductivityInfo> logout = pi_repo.findByStartupIdAndTeamMemberIdAndActivityTypeAndTimestampBetween(
                 shiftStart.getStartupId(), shiftStart.getTeamMemberId(),"logout", shiftStart.getTimestamp(), shiftEnd
         );
-        if (logout.size() < 1)
-            throw new IllegalStateException("Unable to find relevant logout for " + shiftStart);
+        if (logout.isEmpty())
+            throw new IllegalStateException("Unable to find relevant logout for " + shiftStart + shiftStart.getTimestamp());
         return shiftStart.getTimestamp().until(logout.get(0).getTimestamp(), ChronoUnit.MINUTES);
     }
 
