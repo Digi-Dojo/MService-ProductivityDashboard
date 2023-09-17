@@ -23,8 +23,6 @@ public class Consumer {
             groupId = "${it.unibz.digidojolab.dashboard.dashboard.kafka.consumer.group_id}"
     )
     public void storeUserLoggedIn(UserEvent logInEvent) {
-        System.out.println(logInEvent.getStartupId());
-        System.out.println(logInEvent.getTeamMemberId());
         mpi.insertPI(logInEvent.getStartupId(), logInEvent.getTeamMemberId(), "login");
     }
 
@@ -34,8 +32,6 @@ public class Consumer {
             groupId = "${it.unibz.digidojolab.dashboard.dashboard.kafka.consumer.group_id}"
     )
     public void storeUserLoggedOut(UserEvent logInEvent) {
-        System.out.println(logInEvent.getStartupId());
-        System.out.println(logInEvent.getTeamMemberId());
         mpi.insertPI(logInEvent.getStartupId(), logInEvent.getTeamMemberId(), "logout");
     }
 
